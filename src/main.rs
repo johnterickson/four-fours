@@ -47,7 +47,8 @@ impl Expression {
                 write!(f, "⌉")?;
             }
             Action::Add | Action::Sub | Action::Mul | Action::Div | Action::Power => {
-                let needs_parens = parent_action.is_some() && parent_action != Some(self.action);
+                let needs_parens = parent_action == Some(Action::Sub) || parent_action == Some(Action::Div)
+                     || (parent_action.is_some() && parent_action != Some(self.action));
                 if needs_parens && !has_parens {
                     write!(f, "(")?;
                 }
@@ -330,9 +331,9 @@ fn explore(s: &mut State, found: &mut Vec<Option<(State,usize)>>, depth: usize) 
 
                                 println!("{:?} = {} = {} [{} of {} found]", &s.path, &e, closest, found_already, total);
 
-                                if found_already == total {
-                                    return true;
-                                }
+                                // if found_already == total {
+                                //     return true;
+                                // }
                             }
                         }
                     }
