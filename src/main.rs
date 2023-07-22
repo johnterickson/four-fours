@@ -69,11 +69,8 @@ struct Expression {
 
 impl Expression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>, has_parens: bool, parent_action: Option<Action>) -> std::fmt::Result {
-        let needs_parens_around = if self.action.communative() && parent_action == Some(self.action) {
-            false
-        } else {
-            self.action.needs_parens_around() & !has_parens
-        };
+        let parent_precdence = parent_action.map(|a| a.precedence()).unwrap_or(usize::MAX);
+        let needs_parens_around = !has_parens && (parent_precdence > self.action.precedence());
 
         if needs_parens_around {
             write!(f, "(")?;
@@ -188,19 +185,23 @@ impl Action {
         Self::Factorial
     ];
 
-    fn communative(&self) -> bool {
+    fn precedence(&self) -> usize {
         match self {
-            Action::Add | Action::Mul => true,
-            _ => false
-        }
-    }
-
-    fn needs_parens_around(&self) -> bool {
-        match self {
-            Action::Add | Action::Sub | Action::Mul | Action::Div | Action::Modulo | Action::Factorial | Action::Power | Action::Negate
-                => true,
-            Action::SquareRoot | Action::FourthRoot | Action::Push4 | Action::Floor | Action::Ceiling | Action::Abs
-                => false,
+            Action::Add => 10,
+            Action::Sub => 10,
+            Action::Mul => 20,
+            Action::Div => 20,
+            Action::Modulo => 5,
+            Action::Power => 30,
+            Action::Negate => 1,
+            Action::Factorial => 40,
+            //parens are built in
+            Action::Floor => usize::MAX,
+            Action::Ceiling => usize::MAX,
+            Action::Abs => usize::MAX,
+            Action::SquareRoot => usize::MAX,
+            Action::FourthRoot => usize::MAX,
+            Action::Push4 => usize::MAX,
         }
     }
 
